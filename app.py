@@ -1,24 +1,27 @@
 from flask import Flask
-from openai import OpenAI
+import openai
 import os
 
 app = Flask(__name__)
 
+# Загружаем API ключ из переменных среды Render
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
 @app.route("/")
 def home():
-    return "✅ Flask-приложение работает на Render!"
+    return "Привет, мир!"
 
 @app.route("/test")
-def test_openai():
+def test():
     try:
-        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        response = client.responses.create(
-            model="gpt-5",
-            input="Say: Hello from OpenAI test!"
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": "Скажи тестовое сообщение"}],
+            max_tokens=20
         )
-        return response.output[0].content[0].text
+        return f"✅ OpenAI API работает! Ответ: {response.choices[0].message['content']}"
     except Exception as e:
-        return f"❌ Ошибка при обращении к OpenAI: {e}"
+        return f"❌ Ошибка: {e}"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
